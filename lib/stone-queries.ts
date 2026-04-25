@@ -100,15 +100,13 @@ export async function getRigCommandCenter(rigId: string) {
   }
 
   const openRepairs = rig.repairTickets.filter(
-    (ticket) => ![WorkStatus.Complete, WorkStatus.Cancelled].includes(ticket.status),
+    (ticket) => !isClosedWorkStatus(ticket.status),
   );
   const openMaintenance = rig.maintenanceTasks.filter(
-    (task) => ![WorkStatus.Complete, WorkStatus.Cancelled].includes(task.status),
+    (task) => !isClosedWorkStatus(task.status),
   );
   const systemsAtRisk = rig.systems.filter((system) => system.status !== "Good");
-  const toolsAtRisk = rig.tools.filter((tool) =>
-    [ToolStatus.NeedsRepair, ToolStatus.OutOfService].includes(tool.status),
-  );
+  const toolsAtRisk = rig.tools.filter((tool) => isToolAtRisk(tool.status));
 
   return {
     rig,
@@ -144,4 +142,14 @@ export function formatDateTime(value: Date | null | undefined) {
     hour: "numeric",
     minute: "2-digit",
   }).format(value);
+}
+
+
+function isClosedWorkStatus(status: WorkStatus) {
+  return status === WorkStatus.Complete || status === WorkStatus.Cancelled;
+}
+
+
+function isToolAtRisk(status: ToolStatus) {
+  return status === ToolStatus.NeedsRepair || status === ToolStatus.OutOfService;
 }

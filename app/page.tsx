@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Activity, ArrowUpRight, Gauge, HardHat, Plus, ShieldAlert, Wrench } from "lucide-react";
 import { RigStatus } from "@prisma/client";
@@ -23,7 +24,16 @@ export default async function HomePage() {
       <div className="content-shell">
         <nav className="top-nav">
           <Link className="brand-lockup" href="/">
-            <span className="brand-mark"><HardHat size={22} /></span>
+            <span className="brand-mark logo-shell">
+              <Image
+                src="/brand/stone-logo.png"
+                alt="Stone logo"
+                width={48}
+                height={48}
+                className="brand-logo"
+                priority
+              />
+            </span>
             <span>
               <p className="brand-title">Stone RigOps</p>
               <p className="brand-subtitle">Field command center</p>
@@ -34,27 +44,43 @@ export default async function HomePage() {
 
         <section className="hero-card">
           <div className="hero-inner">
-            <div>
-              <p className="eyebrow">Standalone Stone operations app</p>
+            <div className="hero-copy-block">
+              <div className="hero-logo-row">
+                <Image
+                  src="/brand/stone-logo.png"
+                  alt="Stone logo"
+                  width={112}
+                  height={112}
+                  className="hero-logo"
+                  priority
+                />
+                <div>
+                  <p className="eyebrow">Stone field operations</p>
+                  <p className="hero-kicker">RigOps command software</p>
+                </div>
+              </div>
+
               <h1 className="hero-title">Rig systems, repairs, maintenance, and tools in one command view.</h1>
+
               <p className="hero-copy">
-                Track every rig as an operational asset. Create rigs, map their hydraulic, air, electrical,
-                safety, powertrain, and structural systems, then attach maintenance work, repair tickets,
-                and specialized tools to the exact rig component they belong to.
+                Track every rig as an operational asset. Map hydraulic, air, electrical,
+                safety, powertrain, and structural systems, then attach maintenance work,
+                repair tickets, specialized tools, and parts to the exact component they belong to.
               </p>
+
               <div className="hero-actions">
                 <a className="button" href="#rigs">View rigs <ArrowUpRight size={16} /></a>
                 <a className="button-muted" href="#add-rig">Create first rig <Plus size={16} /></a>
               </div>
             </div>
 
-            <div className="metrics-grid">
+            <div className="metrics-grid hero-metrics">
               <Metric label="Rigs" value={metrics.rigCount.toString()} />
               <Metric label="Active" value={metrics.activeRigs.toString()} />
               <Metric label="Open repairs" value={metrics.openRepairs.toString()} />
               <Metric label="Maintenance" value={metrics.openMaintenance.toString()} />
               <Metric label="Systems at risk" value={metrics.systemsAtRisk.toString()} />
-              <Metric label="Video path" value="/videos" />
+              <Metric label="Video" value="Live" />
             </div>
           </div>
 
