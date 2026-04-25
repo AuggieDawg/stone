@@ -1,0 +1,31 @@
+{
+  "name": "stone",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "setup": "npm install && npx prisma generate && npx prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.0",
+    "lucide-react": "^0.575.0",
+    "next": "16.1.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.5",
+    "prisma": "6.19.0",
+    "typescript": "^5.9.3"
+  }
+}

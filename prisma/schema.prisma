@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum RigStatus {
+  Standby
+  Active
+  Moving
+  Maintenance
+  Down
+  Retired
+}
+
+enum SystemKind {
+  Hydraulic
+  Air
+  Electrical
+  Powertrain
+  Controls
+  Safety
+  Fuel
+  Structural
+  Other
+}
+
+enum HealthStatus {
+  Good
+  Watch
+  NeedsService
+  Down
+}
+
+enum ToolStatus {
+  Available
+  InUse
+  NeedsRepair
+  OutOfService
+  Retired
+}
+
+enum WorkStatus {
+  Open
+  Scheduled
+  InProgress
+  WaitingOnParts
+  Complete
+  Cancelled
+}
+
+enum Priority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+model Rig {
+  id        String    @id @default(cuid())
+  name      String
+  rigNumber String?
+  status    RigStatus @default(Standby)
+  operator  String?
+  location  String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  systems          RigSystem[]
+  tools            Tool[]
+  maintenanceTasks MaintenanceTask[]
+  repairTickets    RepairTicket[]
+
+  @@index([status])
+  @@index([name])
+}
+
+model RigSystem {
+  id              String       @id @default(cuid())
+  rigId           String
+  kind            SystemKind
+  name            String
+  status          HealthStatus @default(Good)
+  description     String?
+  lastInspectedAt DateTime?
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  rig              Rig               @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  maintenanceTasks MaintenanceTask[]
+  repairTickets    RepairTicket[]
+
+  @@index([rigId])
+  @@index([rigId, kind])
+  @@index([rigId, status])
+}
+
+model Tool {
+  id           String     @id @default(cuid())
+  rigId        String
+  name         String
+  category     String?
+  status       ToolStatus @default(Available)
+  serialNumber String?
+  location     String?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  rig              Rig               @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  maintenanceTasks MaintenanceTask[]
+  repairTickets    RepairTicket[]
+
+  @@index([rigId])
+  @@index([rigId, category])
+  @@index([rigId, status])
+}
+
+model MaintenanceTask {
+  id           String     @id @default(cuid())
+  rigId        String
+  systemId     String?
+  toolId       String?
+  title        String
+  status       WorkStatus @default(Open)
+  priority     Priority   @default(Medium)
+  dueAt        DateTime?
+  intervalDays Int?
+  notes        String?
+  completedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  rig    Rig        @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  system RigSystem? @relation(fields: [systemId], references: [id], onDelete: SetNull)
+  tool   Tool?      @relation(fields: [toolId], references: [id], onDelete: SetNull)
+
+  @@index([rigId])
+  @@index([systemId])
+  @@index([toolId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueAt])
+}
+
+model RepairTicket {
+  id          String     @id @default(cuid())
+  rigId       String
+  systemId    String?
+  toolId      String?
+  title       String
+  status      WorkStatus @default(Open)
+  priority    Priority   @default(Medium)
+  description String?
+  neededParts String?
+  openedAt    DateTime   @default(now())
+  resolvedAt  DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  rig    Rig        @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  system RigSystem? @relation(fields: [systemId], references: [id], onDelete: SetNull)
+  tool   Tool?      @relation(fields: [toolId], references: [id], onDelete: SetNull)
+
+  @@index([rigId])
+  @@index([systemId])
+  @@index([toolId])
+  @@index([status])
+  @@index([priority])
+  @@index([openedAt])
+}
