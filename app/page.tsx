@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 
 const rigStatuses = Object.values(RigStatus);
 const stoneVideoSrc = "/videos/pump-jacks.mp4";
+const defaultRigTileImages = ["/rigs/rig-1.jpg", "/rigs/rig-2.jpg"];
 
 export default async function HomePage() {
   const { rigs, maintenanceTasks, repairTickets, metrics } =
@@ -122,15 +123,17 @@ export default async function HomePage() {
             />
           ) : (
             <div className="rig-tile-grid centered-rig-tiles" aria-label="Stone rig fleet">
-              {rigs.map((rig) => (
+              {rigs.map((rig, index) => {
+                const tileImage =
+                  rig.imageUrl || defaultRigTileImages[index % defaultRigTileImages.length];
+
+                return (
                 <Link
                   className="rig-tile"
                   href={`/rigs/${rig.id}`}
                   key={rig.id}
                   style={{
-                    backgroundImage: rig.imageUrl
-                      ? `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.84)), url(${rig.imageUrl})`
-                      : undefined,
+                    backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.84)), url(${tileImage})`,
                   }}
                 >
                   <div className="rig-tile-shine" />
@@ -155,7 +158,8 @@ export default async function HomePage() {
                     <span>{rig._count.repairTickets} repairs</span>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

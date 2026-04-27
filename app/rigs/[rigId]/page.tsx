@@ -36,6 +36,8 @@ import {
   createRigAssetAction,
   createRigSystemAction,
   createToolAction,
+  deleteRigAction,
+  updateRigDetailsAction,
   updateMaintenanceStatusAction,
   updateRepairStatusAction,
   updateRigAssetStatusAction,
@@ -132,6 +134,49 @@ export default async function RigCommandCenterPage({ params }: PageProps) {
               <a className="button-muted" href="#assets">Assets</a>
               <a className="button-muted" href="#crew">Crew</a>
               <a className="button-muted" href="#repairs">Repairs</a>
+
+              <ActionModal
+                label="Edit rig"
+                title="Edit rig"
+                eyebrow="Rig controls"
+                description="Update the rig identity, image path, operator, location, notes, and status."
+                icon={<Wrench size={16} />}
+                triggerClassName="button-muted"
+              >
+                <form action={updateRigDetailsAction} className="form-card stack modal-form">
+                  <input type="hidden" name="rigId" value={rig.id} />
+                  <div className="grid-2">
+                    <Field label="Rig name" name="name" required defaultValue={rig.name} />
+                    <Field label="Rig number" name="rigNumber" defaultValue={rig.rigNumber || ""} />
+                    <Select label="Status" name="status" values={rigStatuses} defaultValue={rig.status} />
+                    <Field label="Operator" name="operator" defaultValue={rig.operator || ""} />
+                    <Field label="Location" name="location" defaultValue={rig.location || ""} />
+                    <Field label="Tile image path" name="imageUrl" defaultValue={rig.imageUrl || "/rigs/rig-1.jpg"} />
+                  </div>
+                  <TextArea label="Notes" name="notes" defaultValue={rig.notes || ""} />
+                  <button className="button" type="submit">Save rig</button>
+                </form>
+              </ActionModal>
+
+              <ActionModal
+                label="Delete rig"
+                title="Delete rig"
+                eyebrow="Danger zone"
+                description="This permanently deletes this rig and all systems, tools, inventory, assets, crew, rides, maintenance tasks, and repair tickets attached to it."
+                icon={<ShieldAlert size={16} />}
+                triggerClassName="button-danger"
+              >
+                <form action={deleteRigAction} className="form-card stack modal-form">
+                  <input type="hidden" name="rigId" value={rig.id} />
+                  <div className="danger-panel">
+                    <strong>Delete {rig.name}?</strong>
+                    <p>This cannot be undone. Use this only when the rig record is truly disposable.</p>
+                  </div>
+                  <button className="button-danger solid-danger" type="submit">
+                    Permanently delete rig
+                  </button>
+                </form>
+              </ActionModal>
             </div>
           </div>
 
@@ -766,12 +811,51 @@ function RecordStack({ children, emptyTitle, emptyBody }: { children: React.Reac
   return <div className="stack records-stack">{children}</div>;
 }
 
-function Field({ label, name, required, placeholder, type = "text" }: { label: string; name: string; required?: boolean; placeholder?: string; type?: string }) {
-  return <label className="field"><span>{label}</span><input className="input" name={name} required={required} placeholder={placeholder} type={type} /></label>;
+function Field({
+  label,
+  name,
+  required,
+  placeholder,
+  type = "text",
+  defaultValue,
+}: {
+  label: string;
+  name: string;
+  required?: boolean;
+  placeholder?: string;
+  type?: string;
+  defaultValue?: string;
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <input
+        className="input"
+        name={name}
+        required={required}
+        placeholder={placeholder}
+        type={type}
+        defaultValue={defaultValue}
+      />
+    </label>
+  );
 }
 
-function TextArea({ label, name }: { label: string; name: string }) {
-  return <label className="field"><span>{label}</span><textarea className="textarea" name={name} /></label>;
+function TextArea({
+  label,
+  name,
+  defaultValue,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string;
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <textarea className="textarea" name={name} defaultValue={defaultValue} />
+    </label>
+  );
 }
 
 function Select({ label, name, values, defaultValue }: { label: string; name: string; values: string[]; defaultValue?: string }) {

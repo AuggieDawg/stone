@@ -1458,3 +1458,66 @@ video {
     min-height: 250px;
   }
 }
+
+/* ===== Final cleanup: rig tile images and danger actions ===== */
+
+.rig-tile-grid,
+.centered-rig-tiles {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.rig-tile {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  padding: 12px 17px;
+  font-size: 14px;
+  font-weight: 900;
+  transition: 160ms ease;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+}
+
+.button-danger:hover {
+  border-color: rgba(239, 68, 68, 0.72);
+  background: rgba(239, 68, 68, 0.22);
+  transform: translateY(-1px);
+}
+
+.solid-danger {
+  width: fit-content;
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.danger-panel {
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(239, 68, 68, 0.14), transparent 34%),
+    rgba(239, 68, 68, 0.06);
+  padding: 18px;
+}
+
+.danger-panel strong {
+  display: block;
+  color: #fecaca;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.danger-panel p {
+  margin: 0;
+  color: rgba(254, 202, 202, 0.78);
+  line-height: 1.6;
+}
