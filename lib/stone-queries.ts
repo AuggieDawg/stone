@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ToolStatus, WorkStatus } from "@prisma/client";
+import { RigAssetStatus, ToolStatus, WorkStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -14,6 +14,10 @@ export async function getStoneDashboard() {
             tools: true,
             maintenanceTasks: true,
             repairTickets: true,
+            inventoryItems: true,
+            assets: true,
+            crewMembers: true,
+            crewRides: true,
           },
         },
         systems: {
@@ -76,6 +80,27 @@ export async function getRigCommandCenter(rigId: string) {
           },
         },
       },
+      inventoryCategories: {
+        orderBy: [{ name: "asc" }],
+        include: {
+          _count: {
+            select: { items: true },
+          },
+        },
+      },
+      inventoryItems: {
+        orderBy: [{ quantityOnHand: "asc" }, { name: "asc" }],
+        include: { category: true },
+      },
+      assets: {
+        orderBy: [{ status: "desc" }, { kind: "asc" }, { name: "asc" }],
+      },
+      crewMembers: {
+        orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      },
+      crewRides: {
+        orderBy: [{ vehicleName: "asc" }],
+      },
       maintenanceTasks: {
         orderBy: [{ status: "asc" }, { dueAt: "asc" }, { priority: "desc" }],
         include: { system: true, tool: true },
@@ -90,6 +115,10 @@ export async function getRigCommandCenter(rigId: string) {
           tools: true,
           maintenanceTasks: true,
           repairTickets: true,
+          inventoryItems: true,
+          assets: true,
+          crewMembers: true,
+          crewRides: true,
         },
       },
     },
@@ -107,6 +136,11 @@ export async function getRigCommandCenter(rigId: string) {
   );
   const systemsAtRisk = rig.systems.filter((system) => system.status !== "Good");
   const toolsAtRisk = rig.tools.filter((tool) => isToolAtRisk(tool.status));
+  const inventoryAtRisk = rig.inventoryItems.filter((item) => {
+    const reorderPoint = item.reorderPoint ?? 0;
+    return reorderPoint > 0 && item.quantityOnHand <= reorderPoint;
+  });
+  const assetsAtRisk = rig.assets.filter((asset) => isAssetAtRisk(asset.status));
 
   return {
     rig,
@@ -115,6 +149,9 @@ export async function getRigCommandCenter(rigId: string) {
       openMaintenance: openMaintenance.length,
       systemsAtRisk: systemsAtRisk.length,
       toolsAtRisk: toolsAtRisk.length,
+      inventoryAtRisk: inventoryAtRisk.length,
+      assetsAtRisk: assetsAtRisk.length,
+      activeCrew: rig.crewMembers.filter((member) => member.isActive).length,
     },
   };
 }
@@ -144,12 +181,22 @@ export function formatDateTime(value: Date | null | undefined) {
   }).format(value);
 }
 
+export function formatQuantity(value: number) {
+  if (Number.isInteger(value)) return value.toString();
+  return value.toFixed(2).replace(/\.?0+$/, "");
+}
 
 function isClosedWorkStatus(status: WorkStatus) {
   return status === WorkStatus.Complete || status === WorkStatus.Cancelled;
 }
 
-
 function isToolAtRisk(status: ToolStatus) {
   return status === ToolStatus.NeedsRepair || status === ToolStatus.OutOfService;
+}
+
+function isAssetAtRisk(status: RigAssetStatus) {
+  return (
+    status === RigAssetStatus.NeedsService ||
+    status === RigAssetStatus.OutOfService
+  );
 }

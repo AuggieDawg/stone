@@ -59,6 +59,29 @@ enum Priority {
   Critical
 }
 
+enum RigAssetKind {
+  Pump
+  PipeWrangler
+  WaterTank
+  FluidTank
+  FuelTank
+  Trailer
+  Vehicle
+  PowerUnit
+  Generator
+  HoseReel
+  SafetyEquipment
+  Other
+}
+
+enum RigAssetStatus {
+  Available
+  InUse
+  NeedsService
+  OutOfService
+  Retired
+}
+
 model Rig {
   id        String    @id @default(cuid())
   name      String
@@ -66,14 +89,20 @@ model Rig {
   status    RigStatus @default(Standby)
   operator  String?
   location  String?
+  imageUrl  String?
   notes     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  systems          RigSystem[]
-  tools            Tool[]
-  maintenanceTasks MaintenanceTask[]
-  repairTickets    RepairTicket[]
+  systems             RigSystem[]
+  tools               Tool[]
+  maintenanceTasks    MaintenanceTask[]
+  repairTickets       RepairTicket[]
+  inventoryCategories InventoryCategory[]
+  inventoryItems      InventoryItem[]
+  assets              RigAsset[]
+  crewMembers         CrewMember[]
+  crewRides           CrewRide[]
 
   @@index([status])
   @@index([name])
@@ -119,6 +148,103 @@ model Tool {
   @@index([rigId])
   @@index([rigId, category])
   @@index([rigId, status])
+}
+
+model InventoryCategory {
+  id          String   @id @default(cuid())
+  rigId       String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rig   Rig             @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  items InventoryItem[]
+
+  @@unique([rigId, name])
+  @@index([rigId])
+}
+
+model InventoryItem {
+  id             String   @id @default(cuid())
+  rigId          String
+  categoryId     String?
+  name           String
+  quantityOnHand Float    @default(0)
+  reorderPoint   Float?
+  unit           String?
+  location       String?
+  supplier       String?
+  isCritical     Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rig      Rig                @relation(fields: [rigId], references: [id], onDelete: Cascade)
+  category InventoryCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([rigId])
+  @@index([categoryId])
+  @@index([rigId, name])
+  @@index([quantityOnHand])
+}
+
+model RigAsset {
+  id           String         @id @default(cuid())
+  rigId        String
+  kind         RigAssetKind
+  name         String
+  status       RigAssetStatus @default(Available)
+  quantity     Int            @default(1)
+  capacity     String?
+  serialNumber String?
+  location     String?
+  notes        String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  rig Rig @relation(fields: [rigId], references: [id], onDelete: Cascade)
+
+  @@index([rigId])
+  @@index([rigId, kind])
+  @@index([rigId, status])
+}
+
+model CrewMember {
+  id        String   @id @default(cuid())
+  rigId     String
+  name      String
+  role      String?
+  phone     String?
+  shift     String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rig Rig @relation(fields: [rigId], references: [id], onDelete: Cascade)
+
+  @@index([rigId])
+  @@index([rigId, isActive])
+  @@index([name])
+}
+
+model CrewRide {
+  id                String   @id @default(cuid())
+  rigId             String
+  vehicleName       String
+  vehicleType       String?
+  driverName        String?
+  passengerCapacity Int?
+  plateNumber       String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  rig Rig @relation(fields: [rigId], references: [id], onDelete: Cascade)
+
+  @@index([rigId])
+  @@index([driverName])
 }
 
 model MaintenanceTask {
